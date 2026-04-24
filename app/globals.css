@@ -1,0 +1,266 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  --ink-900: #0f1117;
+  --ink-700: #2d3142;
+  --ink-500: #5a6072;
+  --ink-400: #8890a4;
+  --ink-300: #b8bfcc;
+  --ink-200: #dde1e9;
+  --ink-100: #f2f4f7;
+  --ink-50:  #f8f9fb;
+  --white:   #ffffff;
+
+  --green-700: #166534;
+  --green-600: #16a34a;
+  --green-200: #bbf7d0;
+  --green-100: #dcfce7;
+
+  --amber-700: #92400e;
+  --amber-600: #b45309;
+  --amber-200: #fde68a;
+  --amber-100: #fef3c7;
+
+  --red-700: #991b1b;
+  --red-600: #dc2626;
+  --red-200: #fecaca;
+  --red-100: #fee2e2;
+
+  --slate-600: #475569;
+  --slate-200: #e2e8f0;
+  --slate-100: #f1f5f9;
+
+  --page-width:  210mm;
+  --page-height: 297mm;
+  --page-mx:     14mm;
+  --page-my:     14mm;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 10pt;
+  color: var(--ink-900);
+  background: var(--ink-100);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ── Preview shell ── */
+.preview-shell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 32px 16px 64px;
+  min-height: 100vh;
+}
+
+.preview-toolbar {
+  width: var(--page-width);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+
+.preview-toolbar h1 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-500);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.print-btn {
+  background: var(--ink-900);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.print-btn:hover { background: var(--ink-700); }
+
+/* ── Página A4 ── */
+.page {
+  width: var(--page-width);
+  min-height: var(--page-height);
+  background: var(--white);
+  padding: var(--page-my) var(--page-mx);
+  position: relative;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  font-size: 8pt;
+  line-height: 1.45;
+  color: var(--ink-900);
+}
+
+/* ── Primitivas tipográficas ── */
+.label-xs {
+  font-size: 6pt;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+}
+
+.section-title {
+  font-size: 8pt;
+  font-weight: 700;
+  color: var(--ink-900);
+  margin-bottom: 3mm;
+}
+
+/* ── Separadores ── */
+.rule {
+  height: 0.5px;
+  background: var(--ink-200);
+  margin: 4mm 0;
+}
+.rule--strong {
+  height: 1px;
+  background: var(--ink-300);
+  margin: 4mm 0;
+}
+
+/* ── Tabla ── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 7.5pt;
+}
+.data-table thead tr {
+  background: var(--ink-100);
+}
+.data-table thead th {
+  text-align: left;
+  padding: 2mm 2mm;
+  font-size: 7pt;
+  font-weight: 600;
+  color: var(--ink-500);
+  border-bottom: 1px solid var(--ink-300);
+}
+.data-table tbody td {
+  padding: 1.8mm 2mm;
+  border-bottom: 0.5px solid var(--ink-200);
+  vertical-align: middle;
+}
+.data-table tbody tr:last-child td { border-bottom: none; }
+.data-table tbody tr:nth-child(even) td { background: var(--ink-50); }
+
+/* ── Situación coloreada ── */
+.sit-1 { color: var(--green-600); font-weight: 700; }
+.sit-2, .sit-3 { color: var(--amber-600); font-weight: 700; }
+.sit-4, .sit-5, .sit-6 { color: var(--red-600); font-weight: 700; }
+
+/* ── Risk badge ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 6.5pt;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+.badge--emerald { background: var(--green-100); color: var(--green-700); border-color: var(--green-200); }
+.badge--amber   { background: var(--amber-100); color: var(--amber-700); border-color: var(--amber-200); }
+.badge--red     { background: var(--red-100);   color: var(--red-700);   border-color: var(--red-200); }
+.badge--slate   { background: var(--slate-100); color: var(--slate-600); border-color: var(--slate-200); }
+
+/* ── Alerta contextual ── */
+.alert-box {
+  border-radius: 4px;
+  padding: 3mm 4mm;
+  font-size: 7pt;
+  line-height: 1.5;
+  margin: 3mm 0;
+}
+.alert-box--amber {
+  background: var(--amber-100);
+  border: 0.5px solid var(--amber-200);
+  color: var(--amber-700);
+}
+
+/* ── KPI grid ── */
+.kpi-row {
+  display: grid;
+  gap: 0;
+}
+.kpi-cell {
+  padding: 3mm 0;
+}
+.kpi-cell + .kpi-cell {
+  border-left: 0.5px solid var(--ink-200);
+  padding-left: 4mm;
+}
+.kpi-value {
+  font-size: 14pt;
+  font-weight: 800;
+  line-height: 1;
+  margin-top: 1mm;
+}
+.kpi-sub {
+  font-size: 6pt;
+  color: var(--ink-400);
+  margin-top: 1mm;
+}
+
+/* ── Data grid (perfil/resumen) ── */
+.data-grid {
+  display: grid;
+  gap: 4mm 6mm;
+}
+.data-item-label {
+  font-size: 6pt;
+  color: var(--ink-400);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.data-item-value {
+  font-size: 8pt;
+  font-weight: 600;
+  color: var(--ink-900);
+  margin-top: 0.8mm;
+}
+
+/* ── Footer ── */
+.page-footer {
+  margin-top: auto;
+  padding-top: 4mm;
+  border-top: 0.5px solid var(--ink-200);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 6pt;
+  color: var(--ink-400);
+}
+
+/* ── Print ── */
+@media print {
+  body { background: white; }
+  .preview-shell { padding: 0; gap: 0; background: white; }
+  .preview-toolbar { display: none; }
+  .page {
+    width: 100%;
+    min-height: 100vh;
+    box-shadow: none;
+    page-break-after: always;
+  }
+  .page:last-child { page-break-after: avoid; }
+}
