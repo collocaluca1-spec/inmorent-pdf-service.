@@ -1,3 +1,4 @@
+'use client';
 import type { InformeLocativoData } from '@/lib/mock-locativo';
 import Page1 from './Page1';
 import Page2 from './Page2';
