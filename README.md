@@ -1,5 +1,5 @@
 # inmorent-pdf-service
-updated pdf route
+
 
 App Next.js independiente (App Router) para preview HTML premium del **Informe Comercial Locativo**.
 No tiene dependencias con la app Base44 principal.
