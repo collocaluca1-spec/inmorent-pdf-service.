@@ -17,150 +17,169 @@ const fmtDate = (iso: string) =>
 const fmtPeriodo = (raw: string) =>
   /^\d{6}$/.test(raw) ? `${raw.slice(4, 6)}/${raw.slice(0, 4)}` : raw;
 
-/* ── Risk accent color ── */
-const RISK_COLOR: Record<string, string> = {
-  emerald: '#16a34a',
-  amber:   '#b45309',
-  red:     '#dc2626',
-  slate:   '#64748b',
-};
-const RISK_BG: Record<string, string> = {
-  emerald: '#dcfce7',
-  amber:   '#fef3c7',
-  red:     '#fee2e2',
-  slate:   '#f1f5f9',
+/* ── Paleta de riesgo ── */
+const RISK: Record<string, { fg: string; bg: string; border: string; bar: string }> = {
+  emerald: { fg: '#166534', bg: '#dcfce7', border: '#bbf7d0', bar: '#16a34a' },
+  amber:   { fg: '#92400e', bg: '#fef3c7', border: '#fde68a', bar: '#b45309' },
+  red:     { fg: '#991b1b', bg: '#fee2e2', border: '#fecaca', bar: '#dc2626' },
+  slate:   { fg: '#374151', bg: '#f1f5f9', border: '#e2e8f0', bar: '#64748b' },
 };
 
-/* ── Sit color ── */
-const sitClass = (s: number) =>
-  s === 1 ? 'sit-1' : s <= 3 ? 'sit-2' : 'sit-4';
+const SIT_COLOR = (s: number) => s === 1 ? '#16a34a' : s <= 3 ? '#b45309' : '#dc2626';
 
-/* ── Section header ── */
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{
-      fontSize: '7.5pt', fontWeight: 700, color: '#0f1117',
-      textTransform: 'uppercase', letterSpacing: '0.06em',
-      marginBottom: '2.5mm', marginTop: '0',
-    }}>
-      {children}
-    </div>
-  );
-}
+/* ── Tokens ── */
+const T = {
+  ink900: '#1C1C1E',
+  ink700: '#3A3A3C',
+  ink500: '#6E6E73',
+  ink400: '#8E8E93',
+  ink300: '#C7C7CC',
+  ink200: '#E7E4DE',
+  ink100: '#F2F1ED',
+  ink50:  '#F7F6F3',
+  brand:  '#F36B21',
+  white:  '#FFFFFF',
+};
+
+/* ── Primitivas de estilo ── */
+const s = {
+  labelXs: { fontSize: '5.5pt', fontWeight: 700, color: T.ink400, textTransform: 'uppercase' as const, letterSpacing: '0.08em' },
+  sectionTitle: { fontSize: '7pt', fontWeight: 700, color: T.ink900, textTransform: 'uppercase' as const, letterSpacing: '0.07em', marginBottom: '3mm' },
+  rule: { height: 0.5, background: T.ink200, margin: '4mm 0' } as React.CSSProperties,
+  ruleStrong: { height: 1, background: T.ink300, margin: '4mm 0' } as React.CSSProperties,
+};
+
+import React from 'react';
 
 function Rule({ strong }: { strong?: boolean }) {
-  return (
-    <div style={{
-      height: strong ? 1 : 0.5,
-      background: strong ? '#b8bfcc' : '#dde1e9',
-      margin: '3.5mm 0',
-    }} />
-  );
+  return <div style={strong ? s.ruleStrong : s.rule} />;
 }
 
-function Label({ children }: { children: React.ReactNode }) {
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return <div style={s.sectionTitle}>{children}</div>;
+}
+
+function DataCard({ label, value, color, sub }: { label: string; value: string; color?: string; sub?: string }) {
   return (
     <div style={{
-      fontSize: '5.5pt', fontWeight: 600, color: '#8890a4',
-      textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.8mm',
+      background: T.ink50,
+      border: `0.5px solid ${T.ink200}`,
+      borderRadius: 6,
+      padding: '3mm 3.5mm',
     }}>
-      {children}
+      <div style={s.labelXs}>{label}</div>
+      <div style={{ fontSize: '10pt', fontWeight: 800, color: color ?? T.ink900, marginTop: '1mm', lineHeight: 1.1 }}>
+        {value}
+      </div>
+      {sub && <div style={{ fontSize: '5.5pt', color: T.ink400, marginTop: '0.8mm' }}>{sub}</div>}
     </div>
   );
 }
 
-function Value({ children, color }: { children: React.ReactNode; color?: string }) {
-  return (
-    <div style={{ fontSize: '8pt', fontWeight: 600, color: color ?? '#0f1117' }}>
-      {children}
-    </div>
-  );
-}
-
-/* ── Page 1 ── */
 export default function Page1({ data }: { data: InformeLocativoData }) {
-  const rc = RISK_COLOR[data.color] ?? RISK_COLOR.slate;
-  const rbg = RISK_BG[data.color] ?? RISK_BG.slate;
+  const risk = RISK[data.color] ?? RISK.slate;
   const tipo = data.tipo_persona === 'fisica' ? 'Persona física' : 'Empresa';
 
   return (
     <div className="page">
 
-      {/* ── ENCABEZADO ── */}
-      {/* Barra de acento */}
-      <div style={{ height: 3, background: rc, borderRadius: 2, marginBottom: '4mm' }} />
+      {/* ══ HEADER ══ */}
+      {/* Barra de marca */}
+      <div style={{ height: 3.5, background: T.brand, borderRadius: 2, marginBottom: '5mm' }} />
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '5mm' }}>
         <div>
-          <div style={{ fontSize: '6pt', fontWeight: 600, color: '#8890a4', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1mm' }}>
-            Informe Comercial Locativo
+          {/* Logo text */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '2.5mm' }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.brand }} />
+            <span style={{ fontSize: '6pt', fontWeight: 700, color: T.brand, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+              InmoRent
+            </span>
+            <span style={{ fontSize: '6pt', color: T.ink400, marginLeft: 2 }}>·</span>
+            <span style={{ fontSize: '6pt', color: T.ink400, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              Informe Comercial Locativo
+            </span>
           </div>
-          <div style={{ fontSize: '18pt', fontWeight: 800, fontFamily: 'IBM Plex Mono, monospace', lineHeight: 1 }}>
+
+          {/* Identificación principal */}
+          <div style={{ fontSize: '20pt', fontWeight: 800, color: T.ink900, lineHeight: 1, letterSpacing: '-0.01em' }}>
             {data.documento}
           </div>
           {data.denominacion && (
-            <div style={{ fontSize: '9pt', fontWeight: 700, color: '#2d3142', marginTop: '1.5mm' }}>
+            <div style={{ fontSize: '9.5pt', fontWeight: 600, color: T.ink700, marginTop: '1.5mm' }}>
               {data.denominacion}
             </div>
           )}
-          <div style={{ fontSize: '7pt', color: '#8890a4', marginTop: '1mm' }}>
-            {tipo} · Consulta: {fmtDT(data.fetchedAt)}
+          <div style={{ fontSize: '6.5pt', color: T.ink400, marginTop: '1mm' }}>
+            {tipo} · Consultado el {fmtDT(data.fetchedAt)}
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+        {/* Badges */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}>
           <div style={{
-            background: rbg, color: rc,
-            border: `1px solid ${rc}40`,
-            borderRadius: 100, padding: '3px 10px',
-            fontSize: '7pt', fontWeight: 700,
+            background: risk.bg, color: risk.fg,
+            border: `1px solid ${risk.border}`,
+            borderRadius: 100, padding: '3.5px 10px',
+            fontSize: '7pt', fontWeight: 700, letterSpacing: '0.02em',
+            display: 'flex', alignItems: 'center', gap: 5,
           }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: risk.bar }} />
             {data.riesgoLabel}
           </div>
           <div style={{
-            background: '#f2f4f7', color: '#5a6072',
-            border: '1px solid #dde1e9',
+            background: data.bcraDisponible ? T.ink50 : T.ink100,
+            color: data.bcraDisponible ? T.ink700 : T.ink400,
+            border: `1px solid ${T.ink200}`,
             borderRadius: 100, padding: '3px 10px',
             fontSize: '6.5pt', fontWeight: 600,
           }}>
-            {data.bcraDisponible ? 'BCRA disponible' : 'BCRA no disponible'}
+            {data.bcraDisponible ? '✓ BCRA disponible' : '— BCRA no disponible'}
           </div>
         </div>
       </div>
 
       <Rule strong />
 
-      {/* ── KPIs ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 0 }}>
-        {[
-          { label: 'Deuda vigente', value: money(data.deudaVigente), color: data.deudaVigente > 0 ? rc : undefined },
-          { label: 'Situación vigente', value: data.situacionVigente ? `Sit. ${data.situacionVigente}` : '—', color: data.situacionVigente ? rc : undefined },
-          { label: 'Peor sit. 24 meses', value: data.peorSituacion24m ? `Sit. ${data.peorSituacion24m}` : '—' },
-          { label: 'Fecha consulta', value: fmtDate(data.fetchedAt) },
-        ].map(({ label, value, color }, i) => (
-          <div key={i} style={{
-            paddingRight: '4mm',
-            borderRight: i < 3 ? '0.5px solid #dde1e9' : undefined,
-            paddingLeft: i > 0 ? '4mm' : undefined,
-          }}>
-            <Label>{label}</Label>
-            <div style={{ fontSize: '11pt', fontWeight: 800, color: color ?? '#0f1117', lineHeight: 1.1 }}>
-              {value}
-            </div>
-          </div>
-        ))}
+      {/* ══ KPIs ══ */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '3mm', marginBottom: '5mm' }}>
+        <DataCard
+          label="Deuda vigente"
+          value={money(data.deudaVigente)}
+          color={data.deudaVigente > 0 ? risk.bar : T.ink900}
+          sub="período actual"
+        />
+        <DataCard
+          label="Situación vigente"
+          value={data.situacionVigente ? `Sit. ${data.situacionVigente}` : '—'}
+          color={data.situacionVigente ? SIT_COLOR(data.situacionVigente) : T.ink400}
+          sub="período actual"
+        />
+        <DataCard
+          label="Peor sit. 24 meses"
+          value={data.peorSituacion24m ? `Sit. ${data.peorSituacion24m}` : '—'}
+          sub="histórico"
+        />
+        <DataCard
+          label="Fecha consulta"
+          value={fmtDate(data.fetchedAt)}
+          sub={fmtDT(data.fetchedAt).split(',')[1]?.trim()}
+        />
       </div>
 
       <Rule />
 
-      {/* ── PERFIL + GAUGE ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '110px 1fr', gap: '6mm' }}>
+      {/* ══ PERFIL + GAUGE ══ */}
+      <div style={{ display: 'grid', gridTemplateColumns: '115px 1fr', gap: '7mm', marginBottom: '5mm' }}>
         {/* Gauge */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '2mm' }}>
-          <ScoreGauge score={data.score} color={data.color} size={100} />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <ScoreGauge score={data.score} color={data.color} size={108} />
+          <div style={{ fontSize: '6pt', fontWeight: 700, color: risk.bar, marginTop: '2mm', textAlign: 'center' }}>
+            {data.riesgoLabel}
+          </div>
         </div>
 
-        {/* Perfil */}
+        {/* Perfil del consultado */}
         <div>
           <SectionTitle>Perfil del consultado</SectionTitle>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '3mm 5mm' }}>
@@ -172,8 +191,8 @@ export default function Page1({ data }: { data: InformeLocativoData }) {
               { label: 'Consulta', value: fmtDT(data.fetchedAt) },
             ].map(({ label, value }, i) => (
               <div key={i}>
-                <Label>{label}</Label>
-                <Value>{value}</Value>
+                <div style={s.labelXs}>{label}</div>
+                <div style={{ fontSize: '7.5pt', fontWeight: 600, color: T.ink900, marginTop: '0.8mm' }}>{value}</div>
               </div>
             ))}
           </div>
@@ -182,23 +201,18 @@ export default function Page1({ data }: { data: InformeLocativoData }) {
 
       <Rule />
 
-      {/* ── RESUMEN BCRA ── */}
+      {/* ══ RESUMEN BCRA ══ */}
       <SectionTitle>Resumen BCRA</SectionTitle>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '3mm 5mm', marginBottom: '3mm' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '3mm', marginBottom: '4mm' }}>
         {[
-          { label: 'Situación vigente', value: data.situacionVigente ? `Situación ${data.situacionVigente}` : 'Sin registros', color: data.situacionVigente ? rc : undefined },
+          { label: 'Situación vigente', value: data.situacionVigente ? `Situación ${data.situacionVigente}` : 'Sin registros', color: data.situacionVigente ? SIT_COLOR(data.situacionVigente) : T.ink400 },
           { label: 'Peor situación 24m', value: data.peorSituacion24m ? `Situación ${data.peorSituacion24m}` : '—' },
           { label: 'Entidad principal', value: data.entidadPrincipal ?? '—' },
           { label: 'Período informado', value: data.ultimoPeriodoActual ? fmtPeriodo(data.ultimoPeriodoActual) : '—' },
-          { label: 'Total deuda vigente', value: money(data.deudaVigente), color: data.deudaVigente > 0 ? rc : undefined },
+          { label: 'Total deuda vigente', value: money(data.deudaVigente), color: data.deudaVigente > 0 ? risk.bar : T.ink900 },
           { label: 'Tendencia 6 meses', value: data.tendencia6m === 'estable' ? '✓ Estable' : data.tendencia6m === 'normalizada' ? '↗ Normalizada' : '↘ Inestable' },
         ].map(({ label, value, color }, i) => (
-          <div key={i} style={{ background: '#f8f9fb', borderRadius: 4, padding: '2.5mm 3mm', border: '0.5px solid #dde1e9' }}>
-            <Label>{label}</Label>
-            <div style={{ fontSize: '9pt', fontWeight: 700, color: color ?? '#0f1117', lineHeight: 1.2, marginTop: '0.5mm' }}>
-              {value}
-            </div>
-          </div>
+          <DataCard key={i} label={label} value={value} color={color} />
         ))}
       </div>
 
@@ -206,20 +220,22 @@ export default function Page1({ data }: { data: InformeLocativoData }) {
       {data.situacionVigente === 1 && (data.peorSituacion24m ?? 0) >= 4 && (
         <div style={{
           background: '#fef3c7', border: '0.5px solid #fde68a',
-          borderRadius: 4, padding: '2.5mm 3mm',
-          fontSize: '7pt', color: '#92400e', lineHeight: 1.5,
-          marginBottom: '3mm',
+          borderRadius: 6, padding: '3mm 4mm',
+          fontSize: '7pt', color: '#92400e', lineHeight: 1.6,
+          display: 'flex', gap: '6px', alignItems: 'flex-start',
+          marginBottom: '4mm',
         }}>
-          ⚠ Actualmente figura en situación normal, pero registra antecedente histórico severo en los últimos 24 meses. Se recomienda revisión manual.
+          <span style={{ marginTop: '0.5mm' }}>⚠</span>
+          <span>Actualmente figura en situación normal, pero registra antecedente histórico severo en los últimos 24 meses. Se recomienda revisión manual antes de tomar una decisión.</span>
         </div>
       )}
 
       <Rule />
 
-      {/* ── TABLA BANCARIA ── */}
+      {/* ══ TABLA BANCARIA ══ */}
       <SectionTitle>Último informe bancario</SectionTitle>
       {!data.bcraDisponible || !data.actualRows.length ? (
-        <div style={{ fontSize: '7.5pt', color: '#8890a4', padding: '3mm 0' }}>
+        <div style={{ fontSize: '7.5pt', color: T.ink400, padding: '3mm 0', fontStyle: 'italic' }}>
           No se encontraron registros en el período actual.
         </div>
       ) : (
@@ -228,27 +244,32 @@ export default function Page1({ data }: { data: InformeLocativoData }) {
             <tr>
               <th>Entidad</th>
               <th>Sit.</th>
-              <th>Monto</th>
-              <th>Días atraso</th>
+              <th style={{ textAlign: 'right' }}>Monto</th>
+              <th style={{ textAlign: 'right' }}>Días atraso</th>
             </tr>
           </thead>
           <tbody>
             {data.actualRows.map((row, i) => (
               <tr key={i}>
                 <td>{row.entidad}</td>
-                <td className={sitClass(row.situacion)}>{row.situacion}</td>
+                <td style={{ color: SIT_COLOR(row.situacion), fontWeight: 700 }}>{row.situacion}</td>
                 <td style={{ textAlign: 'right' }}>{money(row.monto)}</td>
-                <td>{row.diasAtraso || '—'}</td>
+                <td style={{ textAlign: 'right', color: row.diasAtraso > 0 ? '#b45309' : T.ink500 }}>
+                  {row.diasAtraso || '—'}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       )}
 
-      {/* ── FOOTER ── */}
+      {/* ══ FOOTER ══ */}
       <div className="page-footer">
-        <span>InmoRent · Informe Comercial Locativo</span>
-        <span>Información orientativa — generada el {fmtDT(new Date().toISOString())}</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span style={{ color: T.brand, fontWeight: 700 }}>InmoRent</span>
+          <span>· Informe Comercial Locativo</span>
+        </span>
+        <span>Información orientativa · {fmtDT(new Date().toISOString())}</span>
         <span>1 / 2</span>
       </div>
     </div>
