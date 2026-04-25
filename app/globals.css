@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -7,154 +7,162 @@
 }
 
 :root {
-  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', monospace;
+  /* ── Tipografía ── */
+  --font: 'Inter', system-ui, sans-serif;
 
-  --ink-900: #0f1117;
-  --ink-700: #2d3142;
-  --ink-500: #5a6072;
-  --ink-400: #8890a4;
-  --ink-300: #b8bfcc;
-  --ink-200: #dde1e9;
-  --ink-100: #f2f4f7;
-  --ink-50:  #f8f9fb;
-  --white:   #ffffff;
+  /* ── Paleta InmoRent ── */
+  --brand:        #F36B21;
+  --brand-light:  #FFF0E6;
+  --brand-dark:   #C4541A;
 
-  --green-700: #166534;
-  --green-600: #16a34a;
-  --green-200: #bbf7d0;
-  --green-100: #dcfce7;
+  --bg:           #F7F6F3;
+  --white:        #FFFFFF;
 
-  --amber-700: #92400e;
-  --amber-600: #b45309;
-  --amber-200: #fde68a;
-  --amber-100: #fef3c7;
+  --ink-900:      #1C1C1E;
+  --ink-700:      #3A3A3C;
+  --ink-500:      #6E6E73;
+  --ink-400:      #8E8E93;
+  --ink-300:      #C7C7CC;
+  --ink-200:      #E7E4DE;
+  --ink-100:      #F2F1ED;
+  --ink-50:       #F7F6F3;
 
-  --red-700: #991b1b;
-  --red-600: #dc2626;
-  --red-200: #fecaca;
-  --red-100: #fee2e2;
+  /* ── Semánticos ── */
+  --green-700:    #166534;
+  --green-600:    #16a34a;
+  --green-100:    #dcfce7;
+  --green-200:    #bbf7d0;
 
-  --slate-600: #475569;
-  --slate-200: #e2e8f0;
-  --slate-100: #f1f5f9;
+  --amber-700:    #92400e;
+  --amber-600:    #b45309;
+  --amber-100:    #fef3c7;
+  --amber-200:    #fde68a;
 
-  --page-width:  210mm;
-  --page-height: 297mm;
-  --page-mx:     14mm;
-  --page-my:     14mm;
+  --red-700:      #991b1b;
+  --red-600:      #dc2626;
+  --red-100:      #fee2e2;
+  --red-200:      #fecaca;
+
+  /* ── Geometría ── */
+  --radius-sm:    4px;
+  --radius:       6px;
+  --radius-lg:    10px;
+
+  /* ── Página A4 ── */
+  --page-w:       210mm;
+  --page-h:       297mm;
+  --page-mx:      14mm;
+  --page-my:      14mm;
 }
 
 body {
-  font-family: var(--font-body);
+  font-family: var(--font);
   font-size: 10pt;
   color: var(--ink-900);
-  background: var(--ink-100);
+  background: var(--bg);
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
 
-/* ── Preview shell ── */
+/* ════════════════════════════════════
+   PREVIEW SHELL
+═══════════════════════════════════ */
 .preview-shell {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
-  padding: 32px 16px 64px;
+  gap: 28px;
+  padding: 36px 16px 72px;
   min-height: 100vh;
+  background: var(--bg);
 }
 
 .preview-toolbar {
-  width: var(--page-width);
+  width: var(--page-w);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 10px 0;
 }
 
+.preview-toolbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preview-toolbar-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--brand);
+}
+
 .preview-toolbar h1 {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--ink-500);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .print-btn {
   background: var(--ink-900);
   color: white;
   border: none;
-  border-radius: 6px;
-  padding: 7px 16px;
+  border-radius: var(--radius);
+  padding: 8px 18px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  font-family: var(--font-body);
+  font-family: var(--font);
+  letter-spacing: 0.01em;
+  transition: background 0.15s;
 }
-.print-btn:hover { background: var(--ink-700); }
+.print-btn:hover { background: var(--brand); }
 
-/* ── Página A4 ── */
+/* ════════════════════════════════════
+   PÁGINA A4
+═══════════════════════════════════ */
 .page {
-  width: var(--page-width);
-  min-height: var(--page-height);
+  width: var(--page-w);
+  min-height: var(--page-h);
   background: var(--white);
   padding: var(--page-my) var(--page-mx);
   position: relative;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.09), 0 2px 8px rgba(0,0,0,0.05);
+  border-radius: 2px;
   display: flex;
   flex-direction: column;
   font-size: 8pt;
-  line-height: 1.45;
+  line-height: 1.5;
   color: var(--ink-900);
 }
 
-/* ── Primitivas tipográficas ── */
-.label-xs {
-  font-size: 6pt;
-  font-weight: 600;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--ink-400);
-}
-
-.section-title {
-  font-size: 8pt;
-  font-weight: 700;
-  color: var(--ink-900);
-  margin-bottom: 3mm;
-}
-
-/* ── Separadores ── */
-.rule {
-  height: 0.5px;
-  background: var(--ink-200);
-  margin: 4mm 0;
-}
-.rule--strong {
-  height: 1px;
-  background: var(--ink-300);
-  margin: 4mm 0;
-}
-
-/* ── Tabla ── */
+/* ════════════════════════════════════
+   TABLA
+═══════════════════════════════════ */
 .data-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 7.5pt;
+  border-radius: var(--radius);
+  overflow: hidden;
 }
 .data-table thead tr {
   background: var(--ink-100);
 }
 .data-table thead th {
   text-align: left;
-  padding: 2mm 2mm;
-  font-size: 7pt;
-  font-weight: 600;
+  padding: 2.2mm 2.5mm;
+  font-size: 6.5pt;
+  font-weight: 700;
   color: var(--ink-500);
-  border-bottom: 1px solid var(--ink-300);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--ink-200);
 }
 .data-table tbody td {
-  padding: 1.8mm 2mm;
+  padding: 2mm 2.5mm;
   border-bottom: 0.5px solid var(--ink-200);
   vertical-align: middle;
 }
@@ -166,80 +174,9 @@ body {
 .sit-2, .sit-3 { color: var(--amber-600); font-weight: 700; }
 .sit-4, .sit-5, .sit-6 { color: var(--red-600); font-weight: 700; }
 
-/* ── Risk badge ── */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 100px;
-  font-size: 6.5pt;
-  font-weight: 700;
-  border: 1px solid transparent;
-}
-.badge--emerald { background: var(--green-100); color: var(--green-700); border-color: var(--green-200); }
-.badge--amber   { background: var(--amber-100); color: var(--amber-700); border-color: var(--amber-200); }
-.badge--red     { background: var(--red-100);   color: var(--red-700);   border-color: var(--red-200); }
-.badge--slate   { background: var(--slate-100); color: var(--slate-600); border-color: var(--slate-200); }
-
-/* ── Alerta contextual ── */
-.alert-box {
-  border-radius: 4px;
-  padding: 3mm 4mm;
-  font-size: 7pt;
-  line-height: 1.5;
-  margin: 3mm 0;
-}
-.alert-box--amber {
-  background: var(--amber-100);
-  border: 0.5px solid var(--amber-200);
-  color: var(--amber-700);
-}
-
-/* ── KPI grid ── */
-.kpi-row {
-  display: grid;
-  gap: 0;
-}
-.kpi-cell {
-  padding: 3mm 0;
-}
-.kpi-cell + .kpi-cell {
-  border-left: 0.5px solid var(--ink-200);
-  padding-left: 4mm;
-}
-.kpi-value {
-  font-size: 14pt;
-  font-weight: 800;
-  line-height: 1;
-  margin-top: 1mm;
-}
-.kpi-sub {
-  font-size: 6pt;
-  color: var(--ink-400);
-  margin-top: 1mm;
-}
-
-/* ── Data grid (perfil/resumen) ── */
-.data-grid {
-  display: grid;
-  gap: 4mm 6mm;
-}
-.data-item-label {
-  font-size: 6pt;
-  color: var(--ink-400);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.data-item-value {
-  font-size: 8pt;
-  font-weight: 600;
-  color: var(--ink-900);
-  margin-top: 0.8mm;
-}
-
-/* ── Footer ── */
+/* ════════════════════════════════════
+   FOOTER
+═══════════════════════════════════ */
 .page-footer {
   margin-top: auto;
   padding-top: 4mm;
@@ -247,11 +184,14 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 6pt;
+  font-size: 5.5pt;
   color: var(--ink-400);
+  letter-spacing: 0.03em;
 }
 
-/* ── Print ── */
+/* ════════════════════════════════════
+   PRINT
+═══════════════════════════════════ */
 @media print {
   body { background: white; }
   .preview-shell { padding: 0; gap: 0; background: white; }
@@ -260,6 +200,7 @@ body {
     width: 100%;
     min-height: 100vh;
     box-shadow: none;
+    border-radius: 0;
     page-break-after: always;
   }
   .page:last-child { page-break-after: avoid; }
