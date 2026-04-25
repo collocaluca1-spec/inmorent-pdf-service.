@@ -56,3 +56,57 @@ Los estilos `@media print` ocultan la toolbar y aplican `page-break-after` entre
 - Agregar ruta `/api/pdf/locativo` con Puppeteer headless para PDF server-side
 - Aceptar datos reales vía query params o body POST
 - Conectar con el botón "Descargar PDF" de la app Base44
+## Endpoint PDF premium
+
+El servicio expone:
+
+```txt
+POST /api/pdf/locativo
+```
+
+Headers:
+
+```txt
+Content-Type: application/json
+X-InmoRent-PDF-Secret: <PDF_API_SECRET>
+```
+
+Body recomendado:
+
+```json
+{
+  "data": {
+    "documento": "27217877550",
+    "denominacion": "CARABELLI MARIA JOSE",
+    "tipo_persona": "fisica",
+    "fetchedAt": "2026-04-24T07:55:00.000Z",
+    "score": 65,
+    "riesgoLabel": "Revisión manual",
+    "color": "amber",
+    "bcraDisponible": true,
+    "situacionVigente": 1,
+    "peorSituacion24m": 5,
+    "deudaVigente": 4168,
+    "entidadPrincipal": "BANCO SANTANDER ARGENTINA S.A.",
+    "tendencia6m": "normalizada",
+    "ultimoPeriodoActual": "202602",
+    "actualRows": [],
+    "historicoRows": [],
+    "periodosHistoricosAgregados": []
+  }
+}
+```
+
+El endpoint devuelve `application/pdf`.
+
+En Vercel configurar la variable de entorno:
+
+```txt
+PDF_API_SECRET=<una_clave_larga>
+```
+
+Opcional, para resolver assets como el logo en generación server-side:
+
+```txt
+PDF_PUBLIC_ORIGIN=https://inmorent-pdf-service.vercel.app
+```
