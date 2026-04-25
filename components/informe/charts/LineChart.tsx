@@ -1,93 +1,91 @@
 export interface LineSeries {
   label: string;
   color: string;
-  data: Record<string, number>; // periodo -> value
+  data: Record<string, number>;
 }
 
 interface Props {
   series: LineSeries[];
   periods: string[];
-  width?: number;
-  height?: number;
 }
 
-const fmtMoney = (v: number): string => {
-  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
-  if (v >= 1_000) return `$${(v / 1_000).toFixed(0)}k`;
-  return `$${v}`;
+const fmtMoney = (value: number) => {
+  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `$${Math.round(value / 1000)}k`;
+  return `$${Math.round(value)}`;
 };
 
-export default function LineChart({ series, periods, width = 550, height = 110 }: Props) {
-  if (!periods.length || !series.length) return null;
+export default function LineChart({ series, periods }: Props) {
+  if (!series.length || !periods.length) return <div style={{ color: '#96969B', fontSize: '7pt' }}>Sin datos históricos.</div>;
 
-  const padL = 36, padR = 8, padT = 8, padB = 30;
+  const width = 720;
+  const height = 178;
+  const padL = 46;
+  const padR = 12;
+  const padT = 14;
+  const padB = 42;
   const chartW = width - padL - padR;
   const chartH = height - padT - padB;
+  const allValues = series.flatMap((item) => periods.map((period) => item.data[period] || 0));
+  const maxValue = Math.max(...allValues, 1);
+  const ticks = [0, 0.25, 0.5, 0.75, 1].map((factor) => maxValue * factor);
 
-  const allValues = series.flatMap(s => periods.map(p => s.data[p] ?? 0));
-  const maxVal = Math.max(...allValues, 1);
-  const ticks = [0, 0.25, 0.5, 0.75, 1].map(f => maxVal * f);
-
-  const xPos = (i: number) => padL + (i / Math.max(periods.length - 1, 1)) * chartW;
-  const yPos = (v: number) => padT + chartH - (v / maxVal) * chartH;
+  const x = (index: number) => padL + (index / Math.max(periods.length - 1, 1)) * chartW;
+  const y = (value: number) => padT + chartH - (value / maxValue) * chartH;
 
   return (
     <div>
-      <svg width={width} height={height} style={{ overflow: 'visible' }}>
-        {/* Grid */}
-        {ticks.map((t, i) => {
-          const y = yPos(t);
+      <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
+        {ticks.map((tick, index) => {
+          const yTick = y(tick);
           return (
-            <g key={i}>
-              <line x1={padL} y1={y} x2={padL + chartW} y2={y} stroke="#dde1e9" strokeWidth={0.5} />
-              <text x={padL - 3} y={y + 3} textAnchor="end" fontSize={5} fill="#8890a4">
-                {fmtMoney(t)}
+            <g key={index}>
+              <line x1={padL} y1={yTick} x2={width - padR} y2={yTick} stroke="#E7E4DE" strokeWidth={1} />
+              <text x={padL - 8} y={yTick + 4} textAnchor="end" fontSize={8} fill="#96969B" fontWeight={600}>
+                {fmtMoney(tick)}
               </text>
             </g>
           );
         })}
 
-        {/* Baseline */}
-        <line x1={padL} y1={padT + chartH} x2={padL + chartW} y2={padT + chartH} stroke="#b8bfcc" strokeWidth={0.8} />
-
-        {/* X labels — mostrar cada 3 para no saturar */}
-        {periods.map((p, i) => {
-          if (i % 3 !== 0 && i !== periods.length - 1) return null;
+        {periods.map((period, index) => {
+          const showLabel = index % 3 === 0 || index === periods.length - 1;
+          if (!showLabel) return null;
+          const labelX = x(index);
           return (
             <text
-              key={i}
-              x={xPos(i)}
-              y={padT + chartH + 10}
+              key={period}
+              x={labelX}
+              y={height - 13}
+              fontSize={7.4}
+              fill="#6E6E73"
+              fontWeight={600}
               textAnchor="middle"
-              fontSize={5}
-              fill="#8890a4"
-              transform={`rotate(-30, ${xPos(i)}, ${padT + chartH + 10})`}
+              transform={`rotate(-35 ${labelX} ${height - 13})`}
             >
-              {p}
+              {period}
             </text>
           );
         })}
 
-        {/* Series */}
-        {series.map((s, si) => {
-          const pts = periods.map((p, i) => `${xPos(i)},${yPos(s.data[p] ?? 0)}`).join(' ');
+        {series.map((item) => {
+          const points = periods.map((period, index) => `${x(index)},${y(item.data[period] || 0)}`).join(' ');
           return (
-            <g key={si}>
-              <polyline points={pts} fill="none" stroke={s.color} strokeWidth={1.5} strokeLinejoin="round" />
-              {periods.map((p, i) => (
-                <circle key={i} cx={xPos(i)} cy={yPos(s.data[p] ?? 0)} r={2} fill={s.color} />
+            <g key={item.label}>
+              <polyline points={points} fill="none" stroke={item.color} strokeWidth={2.3} strokeLinecap="round" strokeLinejoin="round" />
+              {periods.map((period, index) => (
+                <circle key={`${item.label}-${period}`} cx={x(index)} cy={y(item.data[period] || 0)} r={2.4} fill="#fff" stroke={item.color} strokeWidth={1.5} />
               ))}
             </g>
           );
         })}
       </svg>
 
-      {/* Legend */}
-      <div style={{ display: 'flex', gap: 12, marginTop: 4, flexWrap: 'wrap' }}>
-        {series.map((s, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ width: 14, height: 2, background: s.color, display: 'inline-block', borderRadius: 1 }} />
-            <span style={{ fontSize: '6pt', color: '#5a6072' }}>{s.label}</span>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '5mm', marginTop: '1mm', flexWrap: 'wrap' }}>
+        {series.map((item) => (
+          <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '1.5mm' }}>
+            <span style={{ width: 18, height: 3, background: item.color, borderRadius: 3 }} />
+            <span style={{ fontSize: '7pt', color: '#6E6E73', fontWeight: 700 }}>{item.label}</span>
           </div>
         ))}
       </div>

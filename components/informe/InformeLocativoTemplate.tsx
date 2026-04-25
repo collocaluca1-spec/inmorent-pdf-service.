@@ -12,10 +12,7 @@ export default function InformeLocativoTemplate({ data }: Props) {
   return (
     <div className="preview-shell">
       <div className="preview-toolbar no-print">
-        <div className="preview-toolbar-brand">
-          <div className="preview-toolbar-dot" />
-          <h1>InmoRent · Informe Locativo</h1>
-        </div>
+        <h1>InmoRent · PDF Service</h1>
         <button className="print-btn" onClick={() => window.print()}>
           Imprimir / Guardar PDF
         </button>
