@@ -1,4 +1,5 @@
 'use client';
+
 import type { InformeLocativoData } from '@/lib/mock-locativo';
 import Page1 from './Page1';
 import Page2 from './Page2';
@@ -11,7 +12,10 @@ export default function InformeLocativoTemplate({ data }: Props) {
   return (
     <div className="preview-shell">
       <div className="preview-toolbar no-print">
-        <h1>InmoRent · Informe Locativo — Preview</h1>
+        <div className="preview-toolbar-brand">
+          <div className="preview-toolbar-dot" />
+          <h1>InmoRent · Informe Locativo</h1>
+        </div>
         <button className="print-btn" onClick={() => window.print()}>
           Imprimir / Guardar PDF
         </button>
