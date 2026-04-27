@@ -408,7 +408,7 @@ async function launchBrowser() {
   });
 }
 
-async function createPdf(data: InformeLocativoData) {
+async function createPdf(data: InformeLocativoData): Promise<Uint8Array> {
   let browser: Awaited<ReturnType<typeof launchBrowser>> | null = null;
   try {
     const html = await buildHtml(data);
@@ -416,13 +416,14 @@ async function createPdf(data: InformeLocativoData) {
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0', timeout: 30000 });
     await page.emulateMediaType('print');
-    return await page.pdf({
+    const pdfBuffer = await page.pdf({
       format: 'A4',
       printBackground: true,
       displayHeaderFooter: false,
       preferCSSPageSize: true,
       margin: { top: '0mm', right: '0mm', bottom: '0mm', left: '0mm' },
     });
+    return new Uint8Array(pdfBuffer);
   } finally {
     if (browser) await browser.close().catch(() => null);
   }
