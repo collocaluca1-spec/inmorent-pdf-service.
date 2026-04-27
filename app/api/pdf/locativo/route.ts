@@ -149,11 +149,13 @@ function scoreGauge(data: InformeLocativoData): string {
   const dash = (score / 100) * circumference;
   return `<div class="score-box">
     <div class="section-label center">Indicador bancario</div>
-    <svg class="score-svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-      <circle cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="none" stroke="#ECE8E0" stroke-width="${stroke}" />
-      <circle cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${dash} ${circumference - dash}" transform="rotate(-210 ${size / 2} ${size / 2})" />
-    </svg>
-    <div class="score-center"><strong>${score}</strong><span>/100</span></div>
+    <div class="score-wrap">
+      <svg class="score-svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+        <circle cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="none" stroke="#ECE8E0" stroke-width="${stroke}" />
+        <circle cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${dash} ${circumference - dash}" transform="rotate(-210 ${size / 2} ${size / 2})" />
+      </svg>
+      <div class="score-center"><strong>${score}</strong><span>/100</span></div>
+    </div>
     <div class="score-label" style="color:${color}">${escapeHtml(data.riesgoLabel)}</div>
   </div>`;
 }
@@ -162,11 +164,11 @@ function barChart(data: InformeLocativoData): string {
   const rows = data.periodosHistoricosAgregados || [];
   const max = Math.max(...rows.map((r) => r.montoTotal || 0), 1);
   const width = 700;
-  const height = 220;
+  const height = 190;
   const padL = 52;
   const padR = 10;
-  const padT = 20;
-  const padB = 48;
+  const padT = 18;
+  const padB = 38;
   const innerW = width - padL - padR;
   const innerH = height - padT - padB;
   const barW = Math.max(6, innerW / Math.max(rows.length, 1) - 5);
@@ -192,11 +194,11 @@ function lineChart(data: InformeLocativoData): string {
   const entities = Array.from(new Set(rows.map((r) => compactBankName(r.entidad))));
   const periods = Array.from(new Set(rows.map((r) => r.periodo)));
   const width = 700;
-  const height = 230;
+  const height = 190;
   const padL = 52;
   const padR = 14;
-  const padT = 22;
-  const padB = 54;
+  const padT = 18;
+  const padB = 38;
   const innerW = width - padL - padR;
   const innerH = height - padT - padB;
   const max = Math.max(...rows.map((r) => r.monto || 0), 1);
@@ -339,6 +341,25 @@ async function buildHtml(data: InformeLocativoData): Promise<string> {
     .sources ol { margin:6px 0 0 18px; padding:0; }
     .footer { position:absolute; left:14mm; right:14mm; bottom:7mm; display:flex; justify-content:space-between; border-top:1px solid ${BORDER}; padding-top:6px; color:#9B968F; font-size:8.5px; }
     .empty { text-align:center; color:${MUTED}; }
+    .analysis-page { padding-top: 10mm; padding-bottom: 9mm; }
+    .analysis-page .page-head { padding-bottom: 9px; margin-bottom: 9px; }
+    .analysis-page .dist-grid { gap: 10px; margin-bottom: 8px; }
+    .analysis-page .mini-card, .analysis-page .chart-card { padding: 10px 12px; border-radius: 14px; }
+    .analysis-page .mini-card h4, .analysis-page .chart-card h4 { margin-bottom: 6px; font-size: 9.5px; }
+    .analysis-page .donut-row { gap: 10px; }
+    .analysis-page .donut-svg { width: 116px; height: 116px; }
+    .analysis-page .legend-row { margin: 5px 0; font-size: 9.8px; }
+    .analysis-page .chart-card { margin-top: 8px; }
+    .analysis-page .chart-card.large { padding: 10px 12px; }
+    .analysis-page .chart-legend { margin-top: 1px; font-size: 8.8px; }
+    .analysis-page .section { margin-top: 8px; }
+    .analysis-page table { font-size: 9.4px; }
+    .analysis-page thead th { padding: 6px 8px; }
+    .analysis-page tbody td { padding: 6px 8px; }
+    .analysis-page .sources { margin-top: 8px; padding: 8px 10px; font-size: 8.7px; line-height: 1.34; border-radius: 12px; }
+    .analysis-page .sources h3 { margin-bottom: 5px; }
+    .analysis-page .sources p { margin: 0; }
+    .analysis-page .sources ol { margin: 4px 0 0 16px; }
   `;
 
   return `<!doctype html><html lang="es"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -385,7 +406,7 @@ async function buildHtml(data: InformeLocativoData): Promise<string> {
       <section class="section"><h3>Último informe bancario</h3><table><thead><tr><th>Entidad</th><th>Situación</th><th>Monto</th><th>Días atraso</th></tr></thead><tbody>${tableRows(data.actualRows)}</tbody></table></section>
       <div class="footer"><span>InmoRent · Informe Comercial Locativo</span><span>Información orientativa · ${escapeHtml(generatedAt)}</span><span>1 / 2</span></div>
     </section>
-    <section class="pdf-page">
+    <section class="pdf-page analysis-page">
       <header class="page-head"><div class="mini-brand">${logo ? `<img src="${logo}" alt="InmoRent" />` : ''}<div><strong>InmoRent</strong><span>Análisis histórico BCRA</span></div></div><strong>${escapeHtml(data.documento)} · ${escapeHtml(nombre)}</strong></header>
       <h3>Distribución actual</h3>
       <div class="dist-grid">${distributionBlock('Último informe por banco', bankSlices)}${distributionBlock('Último informe por situación', situationSlices)}</div>
