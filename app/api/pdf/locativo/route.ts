@@ -404,7 +404,7 @@ async function launchBrowser() {
     defaultViewport: chromium.defaultViewport,
     executablePath: await chromium.executablePath(),
     headless: chromium.headless,
-    acceptInsecureCerts: true,
+    ignoreHTTPSErrors: true,
   });
 }
 
