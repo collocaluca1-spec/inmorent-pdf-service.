@@ -408,7 +408,7 @@ async function launchBrowser() {
   });
 }
 
-async function createPdf(data: InformeLocativoData): Promise<Uint8Array> {
+async function createPdf(data: InformeLocativoData): Promise<Blob> {
   let browser: Awaited<ReturnType<typeof launchBrowser>> | null = null;
   try {
     const html = await buildHtml(data);
@@ -423,7 +423,7 @@ async function createPdf(data: InformeLocativoData): Promise<Uint8Array> {
       preferCSSPageSize: true,
       margin: { top: '0mm', right: '0mm', bottom: '0mm', left: '0mm' },
     });
-    return new Uint8Array(pdfBuffer);
+    return new Blob([new Uint8Array(pdfBuffer)], { type: 'application/pdf' });
   } finally {
     if (browser) await browser.close().catch(() => null);
   }
