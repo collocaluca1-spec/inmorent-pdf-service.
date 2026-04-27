@@ -43,6 +43,23 @@ function formatMoney(value: number): string {
   }).format(Number(value || 0));
 }
 
+function formatMoneyShort(value: number): string {
+  const amount = Number(value || 0);
+  const abs = Math.abs(amount);
+  if (abs >= 1000000) return `$${(amount / 1000000).toFixed(abs >= 10000000 ? 0 : 1)}M`;
+  if (abs >= 1000) return `$${Math.round(amount / 1000)}k`;
+  return `$${Math.round(amount)}`;
+}
+
+function niceChartMax(values: number[]): number {
+  const rawMax = Math.max(...values, 1);
+  const magnitude = Math.pow(10, Math.floor(Math.log10(rawMax)));
+  const normalized = rawMax / magnitude;
+  const nice = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
+  return nice * magnitude;
+}
+
+
 function formatDateTime(value: string): string {
   return new Date(value).toLocaleString('es-AR', {
     day: '2-digit',
@@ -140,29 +157,47 @@ function donutSvg(slices: ChartSlice[], size = 142, stroke = 28): string {
 }
 
 function scoreGauge(data: InformeLocativoData): string {
-  const score = Math.max(0, Math.min(100, data.score || 0));
+  const score = Math.max(0, Math.min(100, Number(data.score || 0)));
   const color = riskColor(data);
   const size = 138;
   const stroke = 14;
   const radius = (size - stroke) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const dash = (score / 100) * circumference;
+  const center = size / 2;
+  const sweep = Math.max(0, Math.min(359.99, (score / 100) * 360));
+  const startAngle = -90;
+  const endAngle = startAngle + sweep;
+  const pointAt = (angle: number): Point => {
+    const radians = (angle * Math.PI) / 180;
+    return {
+      x: center + radius * Math.cos(radians),
+      y: center + radius * Math.sin(radians),
+    };
+  };
+  const start = pointAt(startAngle);
+  const end = pointAt(endAngle);
+  const largeArc = sweep > 180 ? 1 : 0;
+  const progressPath = score > 0
+    ? `<path d="M ${start.x.toFixed(3)} ${start.y.toFixed(3)} A ${radius} ${radius} 0 ${largeArc} 1 ${end.x.toFixed(3)} ${end.y.toFixed(3)}" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-linecap="round" />`
+    : '';
+
   return `<div class="score-box">
     <div class="section-label center">Indicador bancario</div>
-    <div class="score-wrap">
-      <svg class="score-svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-        <circle cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="none" stroke="#ECE8E0" stroke-width="${stroke}" />
-        <circle cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${dash} ${circumference - dash}" transform="rotate(-210 ${size / 2} ${size / 2})" />
-      </svg>
-      <div class="score-center"><strong>${score}</strong><span>/100</span></div>
-    </div>
-    <div class="score-label" style="color:${color}">${escapeHtml(data.riesgoLabel)}</div>
+    <svg class="score-svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-label="Indicador bancario ${score} sobre 100">
+      <circle cx="${center}" cy="${center}" r="${radius}" fill="none" stroke="#ECE6DE" stroke-width="${stroke}" />
+      ${progressPath}
+      <circle cx="${center}" cy="${center}" r="${radius - stroke / 2 - 3}" fill="#FFFFFF" />
+      <text x="${center}" y="${center - 4}" text-anchor="middle" dominant-baseline="middle" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="880" fill="${color}">${score}</text>
+      <text x="${center}" y="${center + 19}" text-anchor="middle" dominant-baseline="middle" font-family="Inter, Arial, sans-serif" font-size="11" font-weight="700" fill="${MUTED}">/100</text>
+    </svg>
+    <div class="score-label" style="color:${color}; border-color:${color}44; background:${color}12;">${escapeHtml(data.riesgoLabel)}</div>
   </div>`;
 }
 
 function barChart(data: InformeLocativoData): string {
   const rows = data.periodosHistoricosAgregados || [];
-  const max = Math.max(...rows.map((r) => r.montoTotal || 0), 1);
+  const values = rows.map((r) => r.montoTotal || 0);
+  const max = niceChartMax(values);
+  const rawMax = Math.max(...values, 1);
   const width = 700;
   const height = 190;
   const padL = 52;
@@ -171,28 +206,44 @@ function barChart(data: InformeLocativoData): string {
   const padB = 38;
   const innerW = width - padL - padR;
   const innerH = height - padT - padB;
-  const barW = Math.max(6, innerW / Math.max(rows.length, 1) - 5);
+  const baselineY = padT + innerH;
+  const slotW = innerW / Math.max(rows.length, 1);
+  const barW = Math.max(7, slotW - 6);
+  const maxIndex = rows.findIndex((r) => (r.montoTotal || 0) === rawMax);
   const bars = rows.map((r, i) => {
-    const x = padL + i * (innerW / Math.max(rows.length, 1)) + 2;
+    const x = padL + i * slotW + (slotW - barW) / 2;
     const h = ((r.montoTotal || 0) / max) * innerH;
-    const y = padT + innerH - h;
+    const y = baselineY - h;
     const label = rows.length > 15 && i % 2 !== 0 ? '' : r.periodo;
-    return `<rect x="${x}" y="${y}" width="${barW}" height="${Math.max(h, 2)}" rx="4" fill="${BRAND}" />
-      ${label ? `<text x="${x}" y="${height - 12}" transform="rotate(-38 ${x} ${height - 12})" font-size="8" fill="#8C8780">${escapeHtml(label)}</text>` : ''}`;
+    const isMax = i === maxIndex;
+    const barColor = isMax ? BRAND_DARK : BRAND;
+    const valueLabel = isMax
+      ? `<text x="${x + barW / 2}" y="${Math.max(y - 6, 10)}" text-anchor="middle" font-size="8.5" font-weight="850" fill="${barColor}">${formatMoneyShort(r.montoTotal)}</text>`
+      : '';
+
+    return `
+      <rect x="${x}" y="${y}" width="${barW}" height="${Math.max(h, 2)}" rx="4" fill="${barColor}" opacity="${isMax ? 1 : 0.88}" />
+      ${valueLabel}
+      ${label ? `<text x="${x + barW / 2}" y="${height - 12}" text-anchor="end" transform="rotate(-38 ${x + barW / 2} ${height - 12})" font-size="8" fill="#8C8780">${escapeHtml(label)}</text>` : ''}
+    `;
   }).join('');
   const grid = [0, 0.33, 0.66, 1].map((p) => {
-    const y = padT + innerH - p * innerH;
+    const y = baselineY - p * innerH;
     const value = max * p;
     return `<line x1="${padL}" y1="${y}" x2="${width - padR}" y2="${y}" stroke="#EEEAE4" stroke-dasharray="4 4" />
-      <text x="8" y="${y + 4}" font-size="9" fill="#8C8780">${value >= 1000000 ? `$${(value / 1000000).toFixed(1)}M` : `$${Math.round(value / 1000)}k`}</text>`;
+      <text x="8" y="${y + 4}" font-size="9" fill="#8C8780">${formatMoneyShort(value)}</text>`;
   }).join('');
-  return `<svg width="100%" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid}${bars}</svg>`;
+  return `<svg width="100%" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
+    ${grid}
+    <line x1="${padL}" y1="${baselineY}" x2="${width - padR}" y2="${baselineY}" stroke="#E4DFD8" />
+    ${bars}
+  </svg>`;
 }
 
 function lineChart(data: InformeLocativoData): string {
   const rows = data.historicoRows || [];
-  const entities = Array.from(new Set(rows.map((r) => compactBankName(r.entidad))));
-  const periods = Array.from(new Set(rows.map((r) => r.periodo)));
+  const entities: string[] = Array.from(new Set<string>(rows.map((r) => compactBankName(r.entidad))));
+  const periods: string[] = Array.from(new Set<string>(rows.map((r) => String(r.periodo || '')))).filter(Boolean);
   const width = 700;
   const height = 190;
   const padL = 52;
@@ -201,35 +252,46 @@ function lineChart(data: InformeLocativoData): string {
   const padB = 38;
   const innerW = width - padL - padR;
   const innerH = height - padT - padB;
-  const max = Math.max(...rows.map((r) => r.monto || 0), 1);
+  const baselineY = padT + innerH;
+  const max = niceChartMax(rows.map((r) => r.monto || 0));
   const pointFor = (period: string, value: number): Point => {
     const idx = periods.indexOf(period);
     const x = padL + (idx / Math.max(periods.length - 1, 1)) * innerW;
-    const y = padT + innerH - (value / max) * innerH;
+    const y = baselineY - (value / max) * innerH;
     return { x, y };
   };
   const grid = [0, 0.33, 0.66, 1].map((p) => {
-    const y = padT + innerH - p * innerH;
+    const y = baselineY - p * innerH;
     const value = max * p;
     return `<line x1="${padL}" y1="${y}" x2="${width - padR}" y2="${y}" stroke="#EEEAE4" stroke-dasharray="4 4" />
-      <text x="8" y="${y + 4}" font-size="9" fill="#8C8780">${value >= 1000000 ? `$${(value / 1000000).toFixed(1)}M` : `$${Math.round(value / 1000)}k`}</text>`;
+      <text x="8" y="${y + 4}" font-size="9" fill="#8C8780">${formatMoneyShort(value)}</text>`;
   }).join('');
   const labels = periods.filter((_, i) => periods.length <= 12 || i % 2 === 0).map((period) => {
     const p = pointFor(period, 0);
-    return `<text x="${p.x}" y="${height - 16}" transform="rotate(-34 ${p.x} ${height - 16})" font-size="8" fill="#8C8780">${escapeHtml(period)}</text>`;
+    return `<text x="${p.x}" y="${height - 16}" text-anchor="end" transform="rotate(-34 ${p.x} ${height - 16})" font-size="8" fill="#8C8780">${escapeHtml(period)}</text>`;
   }).join('');
   const lines = entities.map((entity, eidx) => {
     const color = eidx === 0 ? BRAND : PALETTE[(eidx + 1) % PALETTE.length];
-    const points = periods.map((period) => {
+    const values = periods.map((period) => {
       const row = rows.find((r) => compactBankName(r.entidad) === entity && r.periodo === period);
-      return pointFor(period, row?.monto || 0);
+      return row?.monto || 0;
     });
+    const points = periods.map((period, idx) => pointFor(period, values[idx] || 0));
     const path = points.map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
-    const dots = points.map((p) => `<circle cx="${p.x}" cy="${p.y}" r="2" fill="#fff" stroke="${color}" stroke-width="1.6" />`).join('');
-    return `<path d="${path}" fill="none" stroke="${color}" stroke-width="2.6" />${dots}`;
+    const areaPath = points.length
+      ? `M ${points[0].x.toFixed(1)} ${baselineY.toFixed(1)} ${points.map((p) => `L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ')} L ${points[points.length - 1].x.toFixed(1)} ${baselineY.toFixed(1)} Z`
+      : '';
+    const area = eidx === 0 && areaPath ? `<path d="${areaPath}" fill="${color}" opacity="0.07" />` : '';
+    const dots = points.map((p) => `<circle cx="${p.x}" cy="${p.y}" r="2.6" fill="#fff" stroke="${color}" stroke-width="1.8" />`).join('');
+    return `${area}<path d="${path}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />${dots}`;
   }).join('');
   const legend = entities.map((entity, idx) => `<span><i style="background:${idx === 0 ? BRAND : PALETTE[(idx + 1) % PALETTE.length]}"></i>${escapeHtml(entity)}</span>`).join('');
-  return `<div>${`<svg width="100%" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid}${lines}${labels}</svg>`}<div class="chart-legend">${legend}</div></div>`;
+  return `<div><svg width="100%" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
+    ${grid}
+    <line x1="${padL}" y1="${baselineY}" x2="${width - padR}" y2="${baselineY}" stroke="#E4DFD8" />
+    ${lines}
+    ${labels}
+  </svg><div class="chart-legend">${legend}</div></div>`;
 }
 
 function tableRows(rows: BankRow[]): string {
@@ -301,11 +363,11 @@ async function buildHtml(data: InformeLocativoData): Promise<string> {
     .section-label { color:#918C84; font-size:8.5px; text-transform:uppercase; letter-spacing:.12em; font-weight:850; margin-bottom:8px; }
     .section-label.center { text-align:center; }
     .score-wrap { position:relative; width:138px; height:138px; }
-    .score-svg { display:block; }
+    .score-svg { display:block; overflow: visible; }
     .score-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
     .score-center strong { font-size:32px; color:${color}; line-height:1; }
     .score-center span { color:${MUTED}; font-size:10px; margin-top:2px; }
-    .score-label { font-size:12px; font-weight:850; margin-top:3px; }
+    .score-label { display:inline-flex; align-items:center; justify-content:center; min-height:28px; padding:6px 12px; border:1px solid; border-radius:999px; font-size:11px; font-weight:800; letter-spacing:.01em; margin-top:2px; }
     .info-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px 14px; }
     .field small { display:block; color:${MUTED}; font-size:9px; margin-bottom:3px; }
     .field b { font-size:12px; line-height:1.2; }
